@@ -91,18 +91,18 @@ export default function ControlPage() {
 
             <Button 
               className="btn-transition bg-primary hover:bg-primary/90 text-white font-medium py-6 h-auto flex flex-col items-center justify-center"
-              onClick={() => sendGateControl('right')}
-            >
-              <ArrowRight className="h-6 w-6 mb-2" />
-              <span>Right Gate</span>
-            </Button>
-
-            <Button 
-              className="btn-transition bg-primary hover:bg-primary/90 text-white font-medium py-6 h-auto flex flex-col items-center justify-center"
               onClick={() => sendGateControl('left')}
             >
               <ArrowLeft className="h-6 w-6 mb-2" />
               <span>Left Gate</span>
+            </Button>
+
+            <Button 
+              className="btn-transition bg-primary hover:bg-primary/90 text-white font-medium py-6 h-auto flex flex-col items-center justify-center"
+              onClick={() => sendGateControl('right')}
+            >
+              <ArrowRight className="h-6 w-6 mb-2" />
+              <span>Right Gate</span>
             </Button>
           </div>
 

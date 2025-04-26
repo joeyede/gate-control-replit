@@ -87,10 +87,7 @@ export default function AuthPage() {
               </Label>
             </div>
 
-            <div className="text-sm text-gray-600 py-2 px-3 bg-gray-100 rounded-md">
-              <p className="font-medium">MQTT Broker URL:</p>
-              <p className="break-all">3b62666a86a14b23956244c4308bad76.s1.eu.hivemq.cloud</p>
-            </div>
+
 
             <Button 
               type="submit" 
