@@ -75,18 +75,18 @@ export default function ControlPage() {
           <div className="grid grid-cols-2 gap-4 mb-8">
             <Button 
               className="btn-transition bg-primary hover:bg-primary/90 text-white font-medium py-6 h-auto flex flex-col items-center justify-center"
-              onClick={() => sendGateControl('full')}
-            >
-              <DoorOpen className="h-6 w-6 mb-2" />
-              <span>Full Open</span>
-            </Button>
-
-            <Button 
-              className="btn-transition bg-primary hover:bg-primary/90 text-white font-medium py-6 h-auto flex flex-col items-center justify-center"
               onClick={() => sendGateControl('pedestrian')}
             >
               <User className="h-6 w-6 mb-2" />
               <span>Pedestrian</span>
+            </Button>
+
+            <Button 
+              className="btn-transition bg-primary hover:bg-primary/90 text-white font-medium py-6 h-auto flex flex-col items-center justify-center"
+              onClick={() => sendGateControl('full')}
+            >
+              <DoorOpen className="h-6 w-6 mb-2" />
+              <span>Full Open</span>
             </Button>
 
             <Button 
