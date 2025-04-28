@@ -4,6 +4,7 @@ import mqtt, { MqttClient, IClientOptions } from 'mqtt';
 export const BROKER_URL = '3b62666a86a14b23956244c4308bad76.s1.eu.hivemq.cloud';
 export const BROKER_PORT = 8884;
 export const TOPIC = 'gate/control';
+export const STATUS_TOPIC = 'gate/status';
 
 export type GateAction = 'full' | 'pedestrian' | 'right' | 'left';
 
@@ -19,16 +20,25 @@ export interface MqttConnectionInfo {
   rememberMe?: boolean;
 }
 
+export interface GateHeartbeat {
+  hb: string; // Date string
+}
+
+export type GateStatus = 'unknown' | 'online' | 'offline';
+
 export class MqttService {
   private client: MqttClient | null = null;
   private _status: MqttConnectionStatus = 'disconnected';
   private _error: string | null = null;
   private _lastAction: GateAction | null = null;
   private _lastActionTimestamp: Date | null = null;
+  private _lastHeartbeat: Date | null = null;
+  private _gateStatus: GateStatus = 'unknown';
 
   private onStatusChangeCallbacks: ((status: MqttConnectionStatus) => void)[] = [];
   private onMessageCallbacks: ((topic: string, message: Buffer) => void)[] = [];
   private onErrorCallbacks: ((error: string) => void)[] = [];
+  private onHeartbeatCallbacks: ((timestamp: Date | null, status: GateStatus) => void)[] = [];
 
   get status(): MqttConnectionStatus {
     return this._status;
@@ -48,6 +58,14 @@ export class MqttService {
 
   get isConnected(): boolean {
     return this._status === 'connected';
+  }
+  
+  get lastHeartbeat(): Date | null {
+    return this._lastHeartbeat;
+  }
+  
+  get gateStatus(): GateStatus {
+    return this._gateStatus;
   }
 
   connect(connectionInfo: MqttConnectionInfo): void {
