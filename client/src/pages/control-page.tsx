@@ -154,6 +154,13 @@ export default function ControlPage() {
               <div className="text-xs text-gray-500">
                 {getGateStatusInfo().description}
               </div>
+              
+              {/* Additional message when countdown is running */}
+              {gateStatus === 'unknown' && !lastHeartbeat && (
+                <div className="text-xs text-primary font-medium mt-2 pt-2 border-t border-gray-100">
+                  You can still try to send a command to the gate
+                </div>
+              )}
             </div>
           </div>
 
