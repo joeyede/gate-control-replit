@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useLocation } from 'wouter';
 import { useMqtt } from '@/hooks/use-mqtt';
 import { Card, CardContent } from '@/components/ui/card';
@@ -26,6 +26,8 @@ export default function ControlPage() {
     gateStatus
   } = useMqtt();
   const [, navigate] = useLocation();
+  const [countdown, setCountdown] = useState(60);
+  const countdownInterval = useRef<NodeJS.Timeout | null>(null);
 
   // Redirect to auth page if not connected
   useEffect(() => {
@@ -33,6 +35,45 @@ export default function ControlPage() {
       navigate('/');
     }
   }, [isConnected, navigate]);
+  
+  // Handle countdown timer for initial heartbeat
+  useEffect(() => {
+    // Start countdown when connected but no heartbeat yet
+    if (isConnected && gateStatus === 'unknown' && !lastHeartbeat) {
+      // Clear any existing interval
+      if (countdownInterval.current) {
+        clearInterval(countdownInterval.current);
+      }
+      
+      // Reset countdown to 60 seconds
+      setCountdown(60);
+      
+      // Start new countdown
+      countdownInterval.current = setInterval(() => {
+        setCountdown(prev => {
+          if (prev <= 1) {
+            // If countdown reaches zero, reset to 60
+            return 60;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else if (lastHeartbeat || gateStatus !== 'unknown') {
+      // Clear interval when heartbeat is received or status changes
+      if (countdownInterval.current) {
+        clearInterval(countdownInterval.current);
+        countdownInterval.current = null;
+      }
+    }
+    
+    // Cleanup function
+    return () => {
+      if (countdownInterval.current) {
+        clearInterval(countdownInterval.current);
+        countdownInterval.current = null;
+      }
+    };
+  }, [isConnected, gateStatus, lastHeartbeat]);
 
   if (!isConnected) {
     return null;
@@ -71,7 +112,9 @@ export default function ControlPage() {
         return {
           icon: <AlertTriangle className="h-4 w-4 text-warning mr-1" />,
           text: 'Gate Status Unknown',
-          description: 'No heartbeat received',
+          description: lastHeartbeat 
+            ? `Last heartbeat: ${lastHeartbeat.toLocaleTimeString()}`
+            : `Expecting heartbeat in: ${countdown} seconds`,
           color: 'text-warning'
         };
     }
