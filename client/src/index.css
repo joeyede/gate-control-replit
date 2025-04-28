@@ -25,6 +25,8 @@
   --radius: 0.5rem;
   --success: 142 76% 36%;
   --success-foreground: 0 0% 100%;
+  --warning: 38 92% 50%;
+  --warning-foreground: 0 0% 100%;
 }
 
 .dark {
@@ -49,6 +51,8 @@
   --ring: 224.3 76.3% 48%;
   --success: 142 76% 36%;
   --success-foreground: 0 0% 100%;
+  --warning: 38 92% 50%;
+  --warning-foreground: 0 0% 100%;
 }
 
 @layer base {
@@ -67,4 +71,16 @@
 
 .btn-transition:active {
   @apply transform scale-[0.98];
+}
+
+.text-success {
+  color: hsl(var(--success));
+}
+
+.text-warning {
+  color: hsl(var(--warning));
+}
+
+.text-destructive {
+  color: hsl(var(--destructive));
 }

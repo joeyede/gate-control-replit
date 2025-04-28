@@ -9,7 +9,10 @@ import {
   ArrowRight, 
   ArrowLeft, 
   DoorOpen, 
-  User
+  User,
+  CheckCircle,
+  XCircle,
+  AlertTriangle
 } from 'lucide-react';
 
 export default function ControlPage() {
@@ -18,7 +21,9 @@ export default function ControlPage() {
     disconnect, 
     sendGateControl, 
     lastAction, 
-    lastActionTimestamp
+    lastActionTimestamp,
+    lastHeartbeat,
+    gateStatus
   } = useMqtt();
   const [, navigate] = useLocation();
 
@@ -45,6 +50,32 @@ export default function ControlPage() {
     
     return `Last action: ${lastAction} at ${lastActionTimestamp.toLocaleTimeString()}`;
   };
+  
+  const getGateStatusInfo = () => {
+    switch (gateStatus) {
+      case 'online':
+        return {
+          icon: <CheckCircle className="h-4 w-4 text-success mr-1" />,
+          text: 'Gate Online',
+          description: lastHeartbeat ? `Last heartbeat: ${lastHeartbeat.toLocaleTimeString()}` : '',
+          color: 'text-success'
+        };
+      case 'offline':
+        return {
+          icon: <XCircle className="h-4 w-4 text-destructive mr-1" />,
+          text: 'Gate Offline',
+          description: lastHeartbeat ? `Last heartbeat: ${lastHeartbeat.toLocaleTimeString()}` : '',
+          color: 'text-destructive'
+        };
+      default:
+        return {
+          icon: <AlertTriangle className="h-4 w-4 text-warning mr-1" />,
+          text: 'Gate Status Unknown',
+          description: 'No heartbeat received',
+          color: 'text-warning'
+        };
+    }
+  };
 
   return (
     <div className="flex-1 flex flex-col p-4 min-h-screen">
@@ -67,8 +98,19 @@ export default function ControlPage() {
               <Wifi className="h-4 w-4 text-success mr-1" />
               <span>Connected to HiveMQ broker</span>
             </div>
-            <div className="text-xs text-gray-500">
+            <div className="text-xs text-gray-500 mb-3">
               Topic: gate/control
+            </div>
+            
+            {/* Gate status indicator */}
+            <div className="flex flex-col rounded-md bg-gray-50 p-3 border border-gray-100">
+              <div className="flex items-center text-sm mb-1">
+                {getGateStatusInfo().icon}
+                <span className={getGateStatusInfo().color}>{getGateStatusInfo().text}</span>
+              </div>
+              <div className="text-xs text-gray-500">
+                {getGateStatusInfo().description}
+              </div>
             </div>
           </div>
 
