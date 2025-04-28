@@ -83,6 +83,8 @@ export class MqttService {
 
       this.client.on('connect', () => {
         this.updateStatus('connected');
+        // Subscribe to gate status topic to receive heartbeats
+        this.client?.subscribe(STATUS_TOPIC);
       });
 
       this.client.on('error', (err) => {
@@ -93,6 +95,12 @@ export class MqttService {
       });
 
       this.client.on('message', (topic, message) => {
+        // Process heartbeat messages
+        if (topic === STATUS_TOPIC) {
+          this.processHeartbeat(message.toString());
+        }
+        
+        // Notify all message callbacks
         this.notifyMessageCallbacks(topic, message);
       });
 
@@ -175,5 +183,52 @@ export class MqttService {
   private notifyErrorCallbacks(error: string): void {
     this._error = error;
     this.onErrorCallbacks.forEach(callback => callback(error));
+  }
+  
+  onHeartbeat(callback: (timestamp: Date | null, status: GateStatus) => void): () => void {
+    this.onHeartbeatCallbacks.push(callback);
+    return () => {
+      this.onHeartbeatCallbacks = this.onHeartbeatCallbacks.filter(cb => cb !== callback);
+    };
+  }
+  
+  private notifyHeartbeatCallbacks(): void {
+    this.onHeartbeatCallbacks.forEach(callback => callback(this._lastHeartbeat, this._gateStatus));
+  }
+  
+  private processHeartbeat(payload: string): void {
+    try {
+      const data = JSON.parse(payload) as GateHeartbeat;
+      if (data && data.hb) {
+        const timestamp = new Date(data.hb);
+        this._lastHeartbeat = timestamp;
+        
+        // Update gate status based on last heartbeat time
+        this.updateGateStatus();
+        
+        // Notify subscribers
+        this.notifyHeartbeatCallbacks();
+      }
+    } catch (error) {
+      console.error('Failed to parse heartbeat message:', error);
+    }
+  }
+  
+  private updateGateStatus(): void {
+    if (!this._lastHeartbeat) {
+      this._gateStatus = 'unknown';
+      return;
+    }
+    
+    const now = new Date();
+    const diffInMs = now.getTime() - this._lastHeartbeat.getTime();
+    const diffInMinutes = diffInMs / (1000 * 60);
+    
+    // Gate is online if heartbeat is less than 2 minutes old
+    if (diffInMinutes < 2) {
+      this._gateStatus = 'online';
+    } else {
+      this._gateStatus = 'offline';
+    }
   }
 }
